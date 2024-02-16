@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     pkg-config bsdmainutils python3 libssl-dev \
     libevent-dev libboost-system-dev libboost-filesystem-dev \
     libboost-chrono-dev libboost-test-dev libboost-thread-dev \
-    libdb-dev libdb++-dev
+    libdb-dev libdb++-dev python3-pip jq
 
 # Clone Bitcoin Core
 RUN apt-get install -y git
@@ -18,12 +18,16 @@ RUN ./autogen.sh
 RUN ./configure
 RUN make
 
-# Prepare Signet configuration
-RUN mkdir /root/.bitcoin
-COPY bitcoin.conf /root/.bitcoin/
+# Copy, Prepare Signet configuration and run signet script
+COPY generate_signet.sh .
+RUN chmod +x generate_signet.sh
+
+# Copy the generate.py script from the Bitcoin core source
+COPY --from=0 /bitcoin/contrib/signet/generate.py /usr/local/bin/
+RUN chmod +x /usr/local/bin/generate.py
 
 # Expose necessary ports
 EXPOSE 38333 38332
 
 # Start Bitcoin Core
-CMD ["/bitcoin/src/bitcoind"]
+CMD ["./generate_signet.sh"]
