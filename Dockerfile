@@ -22,6 +22,9 @@ RUN make
 COPY generate_signet.sh .
 RUN chmod +x generate_signet.sh
 
+# Copy Bitcoin.conf file
+COPY bitcoin.conf /root/.bitcoin/bitcoin.conf
+
 # Copy the generate.py script from the Bitcoin core source
 COPY --from=0 /bitcoin/contrib/signet/generate.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/generate.py
