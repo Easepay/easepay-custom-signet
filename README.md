@@ -41,7 +41,7 @@ The provided Dockerfile and scripts automate the process of setting up a custom 
 
 ```docker run -d -p 38333:38333 -p 38332:38332 bitcoin-signet```
 
-The generate_signet.sh script will execute within the container, setting up the custom Signet and starting the Bitcoin node.
+The `generate_signet.sh` script will execute within the container, setting up the custom Signet and starting the Bitcoin node.
 
 **NOTE**:  the signet challenge parameter (pubkey) should be generated before building
 the docker image. this can be done on your local machine. This approach would mean you would have a fixed public key for your Signet, which isn't such a big deal for testing. It's also possible to update the `generate_script.sh` script to dynamically create the bitcoin.conf after generating the public key. I ran into some issues trying to do this, you may have the time, so Knock yourself out and create a PR if you get it done.
