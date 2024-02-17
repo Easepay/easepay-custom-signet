@@ -67,7 +67,7 @@ NADDR=$(./src/bitcoin-cli -datadir=$datadir getnewaddress)
 # Start mining blocks
 # Include miner.py script into docker
 # Generate the first block to your Address using a specific block time
-./contrib/signet/miner.py --cli="./src/bitcoin-cli -datadir=$datadir" generate 1 --block-time=1 --address="$NADDR" --grind-cmd='./src/bitcoin-util grind'
+./contrib/signet/miner.py --cli="./src/bitcoin-cli -datadir=$datadir" generate 1 --set-block-time=$(date +%s) --address="$NADDR" --grind-cmd='./src/bitcoin-util grind'
 
 # (WIP)
 #../contrib/signet/miner.py --cli="./bitcoin-cli -datadir=$datadir" generate 1 --block-time=1 --address="$NADDR" --backdate 0
