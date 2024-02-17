@@ -64,11 +64,6 @@ NADDR=$(./src/bitcoin-cli -datadir=$datadir getnewaddress)
 # https://github.com/bitcoin/bitcoin/pull/19937#issuecomment-696419619
 
 
-# Start mining blocks
-# Include miner.py script into docker
-# Generate the first block to your Address using a specific block time
-./contrib/signet/miner.py --cli="./src/bitcoin-cli -datadir=$datadir" generate 1 --set-block-time=$(date +%s) --address="$NADDR" --grind-cmd='./src/bitcoin-util grind'
-
 # Navigate to the src directory(this assume that Docker workdir is set to the root)
 cd src/
 
@@ -81,7 +76,7 @@ CLI="./bitcoin-cli -datadir=$datadir"
 NBITS=$($MINER calibrate --grind-cmd="$GRIND" --seconds=250)
 
 # Generate an address for receiving mining rewards
-ADDR=$(CLI -signet getnewaddress)
+ADDR=$($CLI -signet getnewaddress)
 
 # Advanced Block Generation Process
 # Generate and create a block template. This generates a PSBT, processes it, and submits the block to the Signet network
@@ -92,11 +87,6 @@ $CLI -signet getblocktemplate '{"rules": ["signet","segwit"]}' \
   | $MINER --cli="$CLI" solvepsbt --grind-cmd="$GRIND" \
   | $CLI -signet -stdin submitblock
 
-
-
-
-# Mine the first block
-$MINER --cli="$CLI" generate --grind-cmd="$GRIND" --address="$ADDR" --nbits=$NBITS
 
 # Optional for continues mining 
 # $MINER --cli="$CLI" generate --grind-cmd="$GRIND" --address="$ADDR" --nbits=$NBITS --ongoing
