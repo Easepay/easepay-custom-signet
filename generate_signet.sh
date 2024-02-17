@@ -69,18 +69,38 @@ NADDR=$(./src/bitcoin-cli -datadir=$datadir getnewaddress)
 # Generate the first block to your Address using a specific block time
 ./contrib/signet/miner.py --cli="./src/bitcoin-cli -datadir=$datadir" generate 1 --set-block-time=$(date +%s) --address="$NADDR" --grind-cmd='./src/bitcoin-util grind'
 
-# (WIP)
-#../contrib/signet/miner.py --cli="./bitcoin-cli -datadir=$datadir" generate 1 --block-time=1 --address="$NADDR" --backdate 0
-#../contrib/signet/miner.py --cli="./bitcoin-cli -datadir=$datadir" generate 1 --block-time=1 --descriptor="wpkh(...)#..." --secondary
+# Navigate to the src directory(this assume that Docker workdir is set to the root)
+cd src/
+
+# Define neccessary commands and paths
+MINER="../contrib/signet/miner"
+GRIND="./bitcoin-util grind"
+CLI="./bitcoin-cli -datadir=$datadir"
+
+# Calibrate to find a suitable nbits value (Note: it is possible to adjust this as you see fit)
+NBITS=$($MINER calibrate --grind-cmd="$GRIND" --seconds=250)
+
+# Generate an address for receiving mining rewards
+ADDR=$(CLI -signet getnewaddress)
+
+# Advanced Block Generation Process
+# Generate and create a block template. This generates a PSBT, processes it, and submits the block to the Signet network
+$CLI -signet getblocktemplate '{"rules": ["signet","segwit"]}' \
+  | $MINER --cli="$CLI" genpsbt --address="$ADDR" \
+  | $CLI -signet -stdin walletprocesspsbt \
+  | jq -r .psbt \
+  | $MINER --cli="$CLI" solvepsbt --grind-cmd="$GRIND" \
+  | $CLI -signet -stdin submitblock
 
 
-# Generate and create a block template. this generate a PBST, process it, and submit the block to the signet network
-./src/bitcoin-cli -datadir=$datadir getblocktemplate '{"rules": ["signet","segwit"]}' \
-  | ./contrib/signet/miner.py --cli="./src/bitcoin-cli -datadir=$datadir" genpsbt --address="$NADDR" \
-  | ./src/bitcoin-cli -datadir=$datadir -stdin walletprocesspsbt
 
-# Solve and submit a PBST
-./contrib/signet/miner.py solvepsbt --grind-cmd='./src/bitcoin-util grind' | ./src/bitcoin-cli -datadir=$datadir submitblock
+
+# Mine the first block
+$MINER --cli="$CLI" generate --grind-cmd="$GRIND" --address="$ADDR" --nbits=$NBITS
+
+# Optional for continues mining 
+# $MINER --cli="$CLI" generate --grind-cmd="$GRIND" --address="$ADDR" --nbits=$NBITS --ongoing
 
 # Stop the custom Signet node
 ./bitcoin-cli -datadir=$datadir stop
+
