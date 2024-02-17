@@ -65,22 +65,22 @@ NADDR=$(./src/bitcoin-cli -datadir=$datadir getnewaddress)
 
 
 # Start mining blocks
-# Include generate.py script into docker
+# Include miner.py script into docker
 # Generate the first block to your Address using a specific block time
-./contrib/signet/generate.py --cli="./src/bitcoin-cli -datadir=$datadir" generate 1 --block-time=1 --address="$NADDR" --grind-cmd='./src/bitcoin-util grind'
+./contrib/signet/miner.py --cli="./src/bitcoin-cli -datadir=$datadir" generate 1 --block-time=1 --address="$NADDR" --grind-cmd='./src/bitcoin-util grind'
 
 # (WIP)
-#../contrib/signet/generate.py --cli="./bitcoin-cli -datadir=$datadir" generate 1 --block-time=1 --address="$NADDR" --backdate 0
-#../contrib/signet/generate.py --cli="./bitcoin-cli -datadir=$datadir" generate 1 --block-time=1 --descriptor="wpkh(...)#..." --secondary
+#../contrib/signet/miner.py --cli="./bitcoin-cli -datadir=$datadir" generate 1 --block-time=1 --address="$NADDR" --backdate 0
+#../contrib/signet/miner.py --cli="./bitcoin-cli -datadir=$datadir" generate 1 --block-time=1 --descriptor="wpkh(...)#..." --secondary
 
 
 # Generate and create a block template. this generate a PBST, process it, and submit the block to the signet network
 ./src/bitcoin-cli -datadir=$datadir getblocktemplate '{"rules": ["signet","segwit"]}' \
-  | ./contrib/signet/generate.py --cli="./src/bitcoin-cli -datadir=$datadir" genpsbt --address="$NADDR" \
+  | ./contrib/signet/miner.py --cli="./src/bitcoin-cli -datadir=$datadir" genpsbt --address="$NADDR" \
   | ./src/bitcoin-cli -datadir=$datadir -stdin walletprocesspsbt
 
 # Solve and submit a PBST
-./contrib/signet/generate.py solvepsbt --grind-cmd='./src/bitcoin-util grind' | ./src/bitcoin-cli -datadir=$datadir submitblock
+./contrib/signet/miner.py solvepsbt --grind-cmd='./src/bitcoin-util grind' | ./src/bitcoin-cli -datadir=$datadir submitblock
 
 # Stop the custom Signet node
 ./bitcoin-cli -datadir=$datadir stop

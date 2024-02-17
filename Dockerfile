@@ -26,8 +26,9 @@ RUN chmod +x generate_signet.sh
 COPY bitcoin.conf /root/.bitcoin/bitcoin.conf
 
 # Copy the generate.py script from the Bitcoin core source
-COPY --from=0 /bitcoin/contrib/signet/generate.py /usr/local/bin/
-RUN chmod +x /usr/local/bin/generate.py
+COPY --from=0 /bitcoin/contrib/signet/miner.py /usr/local/bin/
+RUN chmod +x /usr/local/bin/miner.py
+
 
 # Expose necessary ports
 EXPOSE 38333 38332
