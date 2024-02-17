@@ -73,7 +73,7 @@ GRIND="./bitcoin-util grind"
 CLI="./bitcoin-cli -datadir=$datadir"
 
 # Calibrate to find a suitable nbits value (Note: it is possible to adjust this as you see fit)
-NBITS=$($MINER calibrate --grind-cmd="$GRIND" --seconds=250)
+NBITS=$($MINER calibrate --grind-cmd="$GRIND" --seconds=160)
 
 # Generate an address for receiving mining rewards
 ADDR=$($CLI -signet getnewaddress)
