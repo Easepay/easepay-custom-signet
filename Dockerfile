@@ -29,6 +29,9 @@ COPY bitcoin.conf /root/.bitcoin/bitcoin.conf
 COPY --from=0 /bitcoin/contrib/signet/miner.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/miner.py
 
+# Copy the .bashrc file to the container's root directory
+COPY .bashrc /root/.bashrc
+
 # Copy the logtail.sh script
 COPY logtail.sh .
 RUN chmod +x logtail.sh
