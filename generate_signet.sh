@@ -12,7 +12,7 @@ echo "started"
 # Generate mew address and keys
 ADDR=$(./src/bitcoin-cli -regtest getnewaddress '' bech32)
 PRIVKEY=$(./src/bitcoin-cli -regtest dumpprivkey $ADDR)
-PUBKEY=$(./src/bitcoin-cli -regtest getaddressinfo $ADDR | jq -r .pubkey)
+PUBKEY=$(./src/bitcoin-cli -regtest getaddressinfo $ADDR | jq -r .scriptPubKey)
 
 # Calculate script length and keys
 LENX2=$(printf $PUBKEY | wc -c)
