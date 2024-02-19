@@ -1,4 +1,4 @@
-# Custom Easepay Bitcoin Signet Docker Setup script
+# Custom Easepay Bitcoin Signet Setup script
 
 # Overview
 
