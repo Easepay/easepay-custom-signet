@@ -1,18 +1,18 @@
 #!/bin/sh
 
-# Start Bitcoind in regtest mode
-./src/bitcoind -regtest -daemon -wallet="test" #change wallet name
-echo "wating for regtest bitcoind to start..."
-while ! ./src/bitcoin-cli -regtest getconnectioncount 2>/dev/null 1>&2; do
+# Start Bitcoind in Signet mode
+/usr/local/bin/bitcoind -signet -daemon -wallet="test" #change wallet name
+echo "wating for signet bitcoind to start..."
+while ! /usr/local/bin/bitcoin-cli -signet getconnectioncount 2>/dev/null 1>&2; do
     echo -n ".";
     sleep 1;
 done
 echo "started"
 
 # Generate mew address and keys
-ADDR=$(./src/bitcoin-cli -regtest getnewaddress '' bech32)
-PRIVKEY=$(./src/bitcoin-cli -regtest dumpprivkey $ADDR)
-PUBKEY=$(./src/bitcoin-cli -regtest getaddressinfo $ADDR | jq -r .scriptPubKey)
+ADDR=$(/usr/local/bin/bitcoin-cli -signet getnewaddress '' bech32)
+PRIVKEY=$(/usr/local/bin/bitcoin-cli -signet dumpprivkey $ADDR)
+PUBKEY=$(/usr/local/bin/bitcoin-cli -signet getaddressinfo $ADDR | jq -r .pubKey)
 
 # Calculate script length and keys
 LENX2=$(printf $PUBKEY | wc -c)
@@ -28,9 +28,6 @@ PUBKEY=$PUBKEY
 SCRIPT=$SCRIPT
 EOF
 
-# Stop the regtest node
-./src/bitcoin-cli -regtest stop
-
 # Create a new directory for the custom signet
 datadir=/root/signet-custom
 mkdir $datadir
@@ -44,28 +41,25 @@ signetchallenge=$SCRIPT
 EOF
 
 # Start bitcoind with the custom signet configuration
-./src/bitcoind -datadir=$datadir -wallet="test"
+/usr/local/bin/bitcoind -datadir=$datadir -signet -wallet="test"
 
 # Wait for the custom signet to start
 echo "Waiting for custom Signet bitcoind to start"
-while ! ./src/bitcoin-cli -datadir=$datadir getconnectioncount 2>/dev/null 1>&2; do
+while ! /usr/local/bin/bitcoin-cli -datadir=$datadir getconnectioncount 2>/dev/null 1>&2; do
      echo -n ".";
      sleep 1;
 done
 echo "Started"
 
 # Import the private key to the custom signet node
-./src/bitcoin-cli -datadir=$datadir importprivkey "$PRIVKEY"
+/usr/local/bin/bitcoin-cli -datadir=$datadir importprivkey "$PRIVKEY"
 
 # Generate a new address for mining
-NADDR=$(./src/bitcoin-cli -datadir=$datadir getnewaddress)
+NADDR=$(/usr/local/bin/bitcoin-cli -datadir=$datadir getnewaddress)
 
 # Examples from
 # https://github.com/bitcoin/bitcoin/pull/19937#issuecomment-696419619
 
-
-# Navigate to the src directory(this assume that Docker workdir is set to the root)
-cd src/
 
 # Define neccessary commands and paths
 MINER="../contrib/signet/miner"
