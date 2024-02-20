@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     libdb-dev libdb++-dev python3-pip jq git
 
 # Clone and build Bitcoin Core
-RUN git clone --depth 1 https://github.com/bitcoin/bitcoin.git 
+RUN git clone https://github.com/bitcoin/bitcoin.git 
 
 # Build Bitcoin core
 WORKDIR /bitcoin

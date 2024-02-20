@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Start Bitcoind in Signet mode
-/usr/local/bin/bitcoind -signet -daemon -wallet="test" #change wallet name
+/usr/local/bin/bitcoind -signet -daemon 
 echo "wating for signet bitcoind to start..."
 while ! /usr/local/bin/bitcoin-cli -signet getconnectioncount 2>/dev/null 1>&2; do
     echo -n ".";
@@ -9,10 +9,22 @@ while ! /usr/local/bin/bitcoin-cli -signet getconnectioncount 2>/dev/null 1>&2; 
 done
 echo "started"
 
+# check if custom_signet_wallet exist, create it if not
+if ! /usr/local/bin/bitcoin-cli -signet listwallets | grep -q "custom_signet_wallet"; then
+    echo "Creating wallet: custom_signet_wallet"
+    /usr/local/bin/bitcoin-cli -signet createwallet "custom_signet_wallet"
+  else 
+     echo "Wallet custom_signet-wallet already exists"
+  fi
+
 # Generate mew address and keys
-ADDR=$(/usr/local/bin/bitcoin-cli -signet getnewaddress '' bech32)
-PRIVKEY=$(/usr/local/bin/bitcoin-cli -signet dumpprivkey $ADDR)
-PUBKEY=$(/usr/local/bin/bitcoin-cli -signet getaddressinfo $ADDR | jq -r .pubKey)
+ADDR=$(/usr/local/bin/bitcoin-cli -signet -rpcwallet="custom_signet_wallet" getnewaddress '' bech32)
+if [ -z "$ADDR" ]; then
+    echo "Failed to get new address"
+fi
+
+PRIVKEY=$(/usr/local/bin/bitcoin-cli -signet -rpcwallet="custom_signet_wallet" dumpprivkey $ADDR)
+PUBKEY=$(/usr/local/bin/bitcoin-cli -signet -rpcwallet="custom_signet_wallet" getaddressinfo $ADDR | jq -r .pubkey)
 
 # Calculate script length and keys
 LENX2=$(printf $PUBKEY | wc -c)
@@ -88,3 +100,6 @@ $CLI -signet getblocktemplate '{"rules": ["signet","segwit"]}' \
 # Stop the custom Signet node
 ./bitcoin-cli -datadir=$datadir stop
 
+
+
+# -wallet="custom_signet_wallet" #Wallet name must match the name we have in signet_challenge script
