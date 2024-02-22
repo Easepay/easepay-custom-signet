@@ -1,6 +1,6 @@
 FROM debian:buster-slim as builder
 
-ARG BITCOIN_VERSION=${BITCOIN_VERSION:-26.0}
+ARG BITCOIN_VERSION=${BITCOIN_VERSION:-25.1}
 
 ARG TARGETPLATFORM  
 
@@ -54,9 +54,18 @@ RUN  apt-get update && \
      apt-get clean
 COPY --from=builder "/tmp/bin" /usr/local/bin 
 COPY docker-entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+COPY install.sh /usr/local/bin/install.sh
+RUN chmod +x /usr/local/bin/install.sh
+
 COPY miner /usr/local/bin/miner
+RUN chmod +x /usr/local/bin/miner
+
 COPY *.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/*.sh
 COPY rpcauth.py /usr/local/bin/rpcauth.py
+RUN chmod +x /usr/local/bin/rpcauth.py
 RUN pip3 install setuptools
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

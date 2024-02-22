@@ -2,6 +2,7 @@ PRIVKEY=${PRIVKEY:-$(cat ~/.bitcoin/PRIVKEY.txt)}
 DATADIR=${DATADIR:-~/.bitcoin/}
 bitcoind -datadir=$DATADIR --daemonwait -persistmempool
 bitcoin-cli -datadir=$DATADIR -named createwallet wallet_name="custom_signet" load_on_startup=true descriptors=false
+# bitcoin-cli -datadir=$DATADIR loadwallet "custom_signet"
 
 #only used in case of mining node
 if [[ "$MINERENABLED" == "1" ]]; then
@@ -12,3 +13,5 @@ if [[ "$MINERENABLED" == "1" ]]; then
     # desc='[{"desc":"wpkh('$PRIVKEY')#'$checksum'","timestamp":0,"internal":false}]'
     # bitcoin-cli -datadir=$DATADIR importdescriptors $desc
 fi
+
+
