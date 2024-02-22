@@ -50,14 +50,3 @@ fi
 if [[ "$I2PSAM" != "" ]]; then
     echo "i2psam=$I2PSAM"
 fi
-if [[ "$ONIONPROXY" != "" ]]; then
-    echo "onion=$ONIONPROXY" # unless have static IP won't resolve the control port as domain
-fi
-
-if [[ "$TORPASSWORD" != "" ]]; then
-    echo "torpassword=$TORPASSWORD"
-fi
-
-if [[ "$TORCONTROL" != "" ]]; then
-    echo "torcontrol=$TORCONTROL"
-fi
