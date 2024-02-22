@@ -3,6 +3,12 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 # Modified for quick blocks and run in leaner docker container
+
+# Modify the Python path
+PATH_BASE_CONTRIB_SIGNET = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+PATH_BASE_TEST_FUNCTIONAL = os.path.abspath(os.path.join(PATH_BASE_CONTRIB_SIGNET, "miner_imports"))
+sys.path.insert(0, PATH_BASE_TEST_FUNCTIONAL)
+
 import argparse
 import base64
 import json
@@ -17,10 +23,7 @@ import subprocess
 
 from io import BytesIO
 
-PATH_BASE_CONTRIB_SIGNET = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-PATH_BASE_TEST_FUNCTIONAL = os.path.abspath(os.path.join(PATH_BASE_CONTRIB_SIGNET, "miner_imports"))
-sys.path.insert(0, PATH_BASE_TEST_FUNCTIONAL)
-
+# Custom module imports from test_framework
 from test_framework.blocktools import WITNESS_COMMITMENT_HEADER, script_BIP34_coinbase_height # noqa: E402
 from test_framework.messages import CBlock, CBlockHeader, COutPoint, CTransaction, CTxIn, CTxInWitness, CTxOut, from_hex, deser_string, hash256, ser_compact_size, ser_string, ser_uint256, tx_from_hex, uint256_from_str # noqa: E402
 from test_framework.script import CScriptOp # noqa: E402
