@@ -62,6 +62,9 @@ RUN chmod +x /usr/local/bin/install.sh
 COPY miner /usr/local/bin/miner
 RUN chmod +x /usr/local/bin/miner
 
+COPY miner_imports /usr/local/bin/miner_imports
+RUN chmod -R +x /usr/local/bin/miner_imports
+
 COPY *.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/*.sh
 COPY rpcauth.py /usr/local/bin/rpcauth.py
