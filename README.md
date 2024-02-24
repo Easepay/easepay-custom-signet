@@ -42,7 +42,7 @@ If MINERENABLED=1 and not provided, it will be generated. If provided, PRIVKEY m
 * ZMQPUBHASHBLOCK: bitcoind setting.
 
 ## 🌍 Network Configuration:
-* UACOMMENT:UA comment displayed from bitcoin-cli -netinfo printout
+* UACOMMENT:UA comment displayed from `bitcoin-cli -netinfo` printout
 
 ## 🔧 Additional Configuration:
 * RPCBIND: bitcoind setting.
