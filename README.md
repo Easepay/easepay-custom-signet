@@ -4,7 +4,53 @@
 
 This repository contains a Docker setup for running a custom Bitcoin Signet. Signet is a test network (testnet) for Bitcoin, allowing developers to test Bitcoin applications and experiments without risking real funds and without the unpredictability of the public testnet.
 
-The provided Dockerfile and scripts automate the process of setting up a custom Signet, generating necessary keys and configuration, and running a Bitcoin node configured for this custom Signet.
+The provided Dockerfile and scripts automate the process of setting up a custom Signet, generating necessary keys and configuration, and running a Bitcoin node configured for this custom Signet. Please **Note** most of the testing framework and miner scripts from bitcoincore has been modified to allow quicker blocker confirmation and easy usage on docker.
+
+## Inspiration
+Some of the Inspiration for this works comes from 
+
+1. [Bitpollo](https://github.com/BitPolito/bitcoin-testing-tools/tree/master) 
+
+2. [Bitcoin-wiki](https://en.bitcoin.it/wiki/Signet)
+
+
+# 🛠 Enviroment variables
+
+## ⛏ Mining Configuration:
+* BLOCKPRODUCTIONDELAY: Sleep period between mining blocks. Defaults to a specified value. (mining mode only)
+
+* If ~/.bitcoin/BLOCKPRODUCTIONDELAY.txt is present, this value will be used, allowing dynamic changes.
+
+* MINERENABLED: Flag to enable the mining chain. (mining mode only)
+
+* NBITS: Sets the minimum difficulty in mining. (mining mode only)
+
+* PRIVKEY: Private key of the Signet signer. If MINERENABLED=1 and not provided, it will be generated. (mining mode only)
+
+* MINETO: Address to mine to. If not provided, a new address will be generated for each block. (mining mode only)
+
+* SIGNETCHALLENGE: Sets the valid block producer for this Signet. Required for client-mode.
+If MINERENABLED=1 and not provided, it will be generated. If provided, PRIVKEY must also be populated.
+
+## 🌐 RPC Configuration:
+* RPCUSER: bitcoind RPC User.
+* RPCPASSWORD: bitcoind RPC password.
+
+## 📡 ZMQ Configuration:
+* ZMQPUBRAWBLOCK: bitcoind setting.
+* ZMQPUBRAWTX: bitcoind setting.
+* ZMQPUBHASHBLOCK: bitcoind setting.
+
+## 🌍 Network Configuration:
+* UACOMMENT:UA comment displayed from bitcoin-cli -netinfo printout
+
+## 🔧 Additional Configuration:
+* RPCBIND: bitcoind setting.
+* RPCALLOWIP: bitcoind setting.
+* WHITELIST: bitcoind setting.
+* ADDNODE: Add seeding node location. Use comma-separation for multiple nodes. Needed for client-mode.
+* EXTERNAL_IP: Add public IP/onion endpoint information. Use comma-separation for multiple IPs.
+
 
 # Features
 
@@ -12,11 +58,16 @@ The provided Dockerfile and scripts automate the process of setting up a custom 
 * Automated Key and Script Generation: Automatically generates the necessary keys and block script for the Signet.
 * Dockerized Environment: Ensures a consistent and isolated environment for running the Bitcoin node.
 * Block Mining Capabilities: Includes scripts to mine blocks on the custom Signet.
+* Log tailing: provides a scripts that allows you to view the logs of your custom signet Node
+
 
 ## Prerequisites
 
 * Docker
 * Git (for cloning the repository)
+* Some networking skills
+* Basic understanding of shell 
+* Basic knowledge on How to run a Bitcoin node
 
 # Repository Contents
 * `Dockerfile`: Instructions for building the Docker image with Bitcoin Core and necessary dependencies.
@@ -26,33 +77,51 @@ The provided Dockerfile and scripts automate the process of setting up a custom 
 * `bashrc`: helper script to help use `bitcoin-cli` inside a shell.
 
 * `miner.py`: Python script used for mining blocks on the custom Signet.
-
+* `docker-entrypoint.sh`: An entry point for our dockerfile
+* `rpcauth.py`: A python script for generating `RPCUSERNAME AND RPCPASSWORD` credentials 
+* `install.sh`: A shell script for installing necessary keys and start up scripts for our custom node. this contains the `gen-signet-keys`, `gen-bitcoind.conf` and `setup-signet.sh` script
+* `OTHERS`
 
 # Setup and Usage
 
 ## Building the Docker Image
 
 1. Clone this repository.
-2. Navigate to the repository directory.
+
+2. Navigate to the root of the repository directory.
+
 3. Build the Docker image:
+`docker build -it bitcoin-signet . `
 
+## 4. Running the docker Image build in Step 3:
+To run the image without hitting some gotcha moment, i find it imperative to explain in more details the approach i took that got me here, Especailly for those trying to run a custom signet for the very first time. This repository is built to be highly customizable, which means you can swap a lot of things out and replace with your own implementation and it would still work. but some things you need to do after building the image would almost always remain the same.
 
-```docker build -t bitcoin-signet .```
+* there is no need to provide a `rpcusername and rpcpassword`, the script would set to the default what it finds in your env file and if you build and run the image without passing `docker -env` flag it would use the defualt values it finds on dockerfile.
+
+* if you want to set a custom username and password for your `rpc` credentials , you would have to run the `rpcauth.py` seperately and pass in the username and password you want. e.g
+`chmod +x ./rpcauth.py` and `./rpcauth.py myusername mypassword`. its possible to only run this script without passing in the password parameter and allow the script to generate a salted hash password for you.
+
+* if you are part of a team, there would be no need to run the gen-signet-keys seperately to get access to `signetchallenge` parameters as this would be provided to you by your administrator. if you are a Team Lead or Administrator, you would have to generate a `signetchallenge` by either running this script seperately or echoing it out to the terminal once you run the docker image. this would be available in the logs printed out when this image starts. if you take this later approach, you would have to stop the image and feed this challenge to your `env` file and rebuild the image again. 
+
+* As an administrator, there is no need to set up a bitcoin.conf file to run this image, though it is possible for you to do this, when the setup script cannot find a `bitcoin.conf` file, it would generate one by using the `gen-bitcoind-conf` script and using the default values found here. As part of a team, one is required, for you to be able to join the Node network your Team Lead or administrator would provide the credentials needed, which would include the signetchallene, rpcusername, rpcpassword among other networking credentials needed to successfully join his Node.
+
+* As an administrator, the Mine.sh scripts gives you access to the NBITS value, this is set to default value and can be adusted  by you depeding on your computational resources. i would suggest the NBITS value remains as it is, as there is no interest in adjusting it. 
+
+* Please do not confuse the NBITS value to mean thesame thing as the *PRODUCTIONDELAY* VALUE found in your env. The productiondelay value specifies just the time it would take generate a new block, why the NBITS value is the difficulty it takes to mine a block. the PRODUCTIONDELAY can be adjusted as you deemed fit, depending on how quickly you want new blocks to be generated. I have set this time to 600secs which is apporiximately 10 minutes as it is on mainnet. but you can adjust this time as you seem fit.
+
+**PLEASE NOTE** Adjusting the Bitcoin version in dockerfile to work with descriptors is possible, and to load newer version of bitcoin wallet, if you do this, you would have to rework the `setup-signet.sh` script to accomodate this. i couldn't get it to work. Also updating the bitcoin version to 26 breaks the wallet functionality. I have not been able to get this done. still a (WIP). If you can get these two things done, send a PR i would love to see how you get it to work.
 
 ## Running the Custom Signet Node
 
-```docker run -d -p 38333:38333 -p 38332:38332 bitcoin-signet```
+```docker run --env-file .env -d  --name bitcoin-signet-instance bitcoin-signet```
 
-The `generate_signet.sh` script will execute within the container, setting up the custom Signet and starting the Bitcoin node.
+This command assumes that your env file is located at the root of your project directory.
 
-**NOTE**:  the signet challenge parameter (pubkey) should be generated before building
-the docker image. this can be done on your local machine. This approach would mean you would have a fixed public key for your Signet, which isn't such a big deal for testing. It's also possible to update the `generate_script.sh` script to dynamically create the bitcoin.conf after generating the public key. I ran into some issues trying to do this, you may have the time, so Knock yourself out and create a PR if you get it done.
+The `setup_signet.sh` script will execute within the container, setting up the custom Signet and starting the Bitcoin node.
 
 ## POINTERS
-* The script would first start bitcoind in regtest mode, generate the key pair, construct the signetchallenge with the new public key, 
+* The full setup script would first start bitcoind in regtest mode, generate the key pair, construct the signetchallenge with the new public key, 
 * Create the bitcoin.conf with this signetchallenge, and then restart bitcoind in Signet mode with the new configuration.
-
-`Warning`: This approach is more complex but allows for a fresh public key each time you build and run the container.
 
 ## Accessing the Node
 * The Bitcoin node's JSON-RPC interface will be available on port 38332 of the host machine... This would be deployed for easy connection for all team members who need to interact with it. 
@@ -60,7 +129,7 @@ the docker image. this can be done on your local machine. This approach would me
 * The Bitcoin P2P network for this Signet operates on port 38333.
 
 ## Customizing the Signet
-You can modify the generate_signet.sh script to change the Signet parameters, such as the block signing keys or other consensus rules.
+You can modify the `gen_signet-key.sh` script to change the Signet parameters, such as the block signing keys or other consensus rules.
 
 ## Security Considerations
 This setup is intended for development and testing purposes only. Do not use it with real funds or sensitive data.
