@@ -40,6 +40,13 @@ rpcallowip=$RPCALLOWIP
 whitelist=$WHITELIST
 fallbackfee=0.0002"
 
+# Add wallet auto-load configurations (outside of the [signet] section)
+echo "wallet=easepay.wallet.hot.2.3.multisig"
+echo "wallet=easepay.wallet.cold.first"
+echo "wallet=easepay.wallet.cold.second"
+echo "wallet=easepay.wallet.cold.third"
+
+
 if [[ "$ADDNODE" != "" ]]; then
     echo $ADDNODE | tr ',' '\n' | while read node; do
         echo "addnode=$node"

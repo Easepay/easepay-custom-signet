@@ -91,7 +91,7 @@ If MINERENABLED=1 and not provided, it will be generated. If provided, PRIVKEY m
 2. Navigate to the root of the repository directory.
 
 3. Build the Docker image:
-`docker build -it bitcoin-signet . `
+`docker build -t bitcoin-signet . `
 
 ## 4. Running the docker Image build in Step 3:
 To run the image without hitting some gotcha moment, i find it imperative to explain in more details the approach i took that got me here, Especailly for those trying to run a custom signet for the very first time. This repository is built to be highly customizable, which means you can swap a lot of things out and replace with your own implementation and it would still work. but some things you need to do after building the image would almost always remain the same.
