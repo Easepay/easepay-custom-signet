@@ -36,7 +36,6 @@ zmqpubrawblock=$ZMQPUBRAWBLOCK
 zmqpubrawtx=$ZMQPUBRAWTX
 zmqpubhashblock=$ZMQPUBHASHBLOCK
 rpcbind=$RPCBIND
-rpcport=$RPCPORT
 rpcallowip=$RPCALLOWIP
 whitelist=$WHITELIST
 fallbackfee=0.0002"
